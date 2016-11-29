@@ -91,7 +91,7 @@ class Script(object):
     """
     def __init__(self, source=None, line=None, column=None, path=None,
                  encoding='utf-8', source_path=None, source_encoding=None,
-                 sys_path=None):
+                 sys_path=None, find_module=None):
         if source_path is not None:
             warnings.warn("Deprecated since version 0.7. Use path instead of source_path.", DeprecationWarning, stacklevel=2)
             path = source_path
@@ -128,7 +128,7 @@ class Script(object):
             venv = os.getenv('VIRTUAL_ENV')
             if venv:
                 sys_path = list(get_venv_path(venv))
-        self._evaluator = Evaluator(self._grammar, sys_path=sys_path)
+        self._evaluator = Evaluator(self._grammar, sys_path=sys_path, find_module=find_module)
         debug.speed('init')
 
     @cache.memoize_method

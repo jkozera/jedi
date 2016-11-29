@@ -544,6 +544,12 @@ class ModuleContext(use_metaclass(CachedMetaClass, context.TreeContext)):
     def _py__path__(self):
         search_path = self.evaluator.sys_path
         init_path = self.py__file__()
+
+
+        # TODO(renfred): fix this.
+        return [self._get_init_directory()]
+
+
         if os.path.basename(init_path) == '__init__.py':
             with open(init_path, 'rb') as f:
                 content = common.source_to_unicode(f.read())

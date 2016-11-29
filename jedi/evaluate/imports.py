@@ -188,6 +188,7 @@ class Importer(object):
         self._evaluator = evaluator
         self.level = level
         self.module_context = module_context
+        self.find_module = evaluator.find_module or find_module
         try:
             self.file_path = module_context.py__file__()
         except AttributeError:
@@ -322,7 +323,7 @@ class Importer(object):
                         if not isinstance(path, list):
                             path = [path]
                         module_file, module_path, is_pkg = \
-                            find_module(import_parts[-1], path, fullname=module_name)
+                            self.find_module(import_parts[-1], path, fullname=module_name)
                         break
                     except ImportError:
                         module_path = None
@@ -338,7 +339,7 @@ class Importer(object):
                 sys.path, temp = sys_path, sys.path
                 try:
                     module_file, module_path, is_pkg = \
-                        find_module(import_parts[-1], fullname=module_name)
+                        self.find_module(import_parts[-1], fullname=module_name)
                 finally:
                     sys.path = temp
             except ImportError:
@@ -352,9 +353,11 @@ class Importer(object):
             # __init__ file.
             if module_path.endswith(('.zip', '.egg')):
                 code = module_file.loader.get_source(module_name)
+            elif self._evaluator.find_module:
+                module_path = os.path.join(module_path, "__init__.py") # TODO(renfred) handle this properly.
             else:
                 module_path = get_init_path(module_path)
-        elif module_file:
+        if module_file:
             code = module_file.read()
             module_file.close()
 
@@ -364,7 +367,7 @@ class Importer(object):
             module = ImplicitNamespaceContext(self._evaluator, fullname=fullname)
             module.paths = paths
         elif module_file is None and not module_path.endswith(('.py', '.zip', '.egg')):
-            module = compiled.load_module(self._evaluator, module_path)
+            module = _load_module(self._evaluator, module_path)
         else:
             module = _load_module(self._evaluator, module_path, code, sys_path, parent_module)
 
