@@ -149,7 +149,7 @@ A dynamic param completion, finds the callees of the function, which define
 the params of a function.
 """
 
-dynamic_params_for_other_modules = False # TODO(renfred): re-enable
+dynamic_params_for_other_modules = True
 """
 Do the same for other modules.
 """

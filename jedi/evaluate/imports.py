@@ -508,13 +508,17 @@ def get_modules_containing_name(evaluator, modules, name):
             return er.ModuleContext(evaluator, module_node, path=path)
 
     def check_fs(path):
-        with open(path, 'rb') as f:
-            code = source_to_unicode(f.read())
-            if name in code:
-                module_name = os.path.basename(path)[:-3]  # Remove `.py`.
-                module = _load_module(evaluator, path, code)
-                add_module(evaluator, module_name, module)
-                return module
+        if evaluator.load_source is not None:
+            code = evaluator.load_source(path)
+        else:
+            with open(path, 'rb') as f:
+                code = source_to_unicode(f.read())
+
+        if name in code:
+            module_name = os.path.basename(path)[:-3]  # Remove `.py`.
+            module = _load_module(evaluator, path, code)
+            add_module(evaluator, module_name, module)
+            return module
 
     # skip non python modules
     used_mod_paths = set()
@@ -530,17 +534,20 @@ def get_modules_containing_name(evaluator, modules, name):
     if not settings.dynamic_params_for_other_modules:
         return
 
-    paths = set(settings.additional_dynamic_modules)
-    for p in used_mod_paths:
-        if p is not None:
-            # We need abspath, because the seetings paths might not already
-            # have been converted to absolute paths.
-            d = os.path.dirname(os.path.abspath(p))
-            for file_name in os.listdir(d):
-                path = os.path.join(d, file_name)
-                if path not in used_mod_paths and path not in paths:
-                    if file_name.endswith('.py'):
-                        paths.add(path)
+    if evaluator.list_modules is not None:
+        paths = evaluator.list_modules()
+    else:
+        paths = set(settings.additional_dynamic_modules)
+        for p in used_mod_paths:
+            if p is not None:
+                # We need abspath, because the seetings paths might not already
+                # have been converted to absolute paths.
+                d = os.path.dirname(os.path.abspath(p))
+                for file_name in os.listdir(d):
+                    path = os.path.join(d, file_name)
+                    if path not in used_mod_paths and path not in paths:
+                        if file_name.endswith('.py'):
+                            paths.add(path)
 
     # Sort here to make issues less random.
     for p in sorted(paths):
