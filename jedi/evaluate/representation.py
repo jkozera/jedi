@@ -677,8 +677,8 @@ class ImplicitNamespaceContext(use_metaclass(CachedMetaClass, context.TreeContex
         names = {}
 
         paths = self.paths
-        if self.fs:
-            file_names = chain.from_iterable(self.fs.listdir(path) for path in paths)
+        if self.evaluator.fs:
+            file_names = chain.from_iterable(self.evaluator.fs.listdir(path) for path in paths)
         else:
             file_names = chain.from_iterable(os.listdir(path) for path in paths)
         mods = [
