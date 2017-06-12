@@ -85,7 +85,7 @@ from jedi import parser_utils
 
 
 class Evaluator(object):
-    def __init__(self, grammar, sys_path=None, find_module=None, list_modules=None, load_source=None):
+    def __init__(self, grammar, sys_path=None, find_module=None, list_modules=None, load_source=None, fs=None):
         self.grammar = grammar
         self.memoize_cache = {}  # for memoize decorators
         # To memorize modules -> equals `sys.modules`.
@@ -99,6 +99,7 @@ class Evaluator(object):
         self.find_module = find_module
         self.list_modules = list_modules
         self.load_source = load_source
+        self.fs = fs
 
         if sys_path is None:
             sys_path = sys.path

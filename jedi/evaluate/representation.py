@@ -677,7 +677,10 @@ class ImplicitNamespaceContext(use_metaclass(CachedMetaClass, context.TreeContex
         names = {}
 
         paths = self.paths
-        file_names = chain.from_iterable(os.listdir(path) for path in paths)
+        if self.fs:
+            file_names = chain.from_iterable(self.fs.listdir(path) for path in paths)
+        else:
+            file_names = chain.from_iterable(os.listdir(path) for path in paths)
         mods = [
             file_name.rpartition('.')[0] if '.' in file_name else file_name
             for file_name in file_names
