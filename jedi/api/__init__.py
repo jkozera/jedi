@@ -89,14 +89,17 @@ class Script(object):
     :type sys_path: list
 
     """
+
     def __init__(self, source=None, line=None, column=None, path=None,
                  encoding='utf-8', source_path=None, source_encoding=None,
-                 sys_path=None):
+                 sys_path=None, venv_path=None):
         if source_path is not None:
-            warnings.warn("Deprecated since version 0.7. Use path instead of source_path.", DeprecationWarning, stacklevel=2)
+            warnings.warn("Deprecated since version 0.7. Use path instead of source_path.",
+                          DeprecationWarning, stacklevel=2)
             path = source_path
         if source_encoding is not None:
-            warnings.warn("Deprecated since version 0.8. Use encoding instead of source_encoding.", DeprecationWarning, stacklevel=2)
+            warnings.warn("Deprecated since version 0.8. Use encoding instead of source_encoding.",
+                          DeprecationWarning, stacklevel=2)
             encoding = source_encoding
 
         self._orig_path = path
@@ -125,7 +128,10 @@ class Script(object):
         debug.reset_time()
         self._grammar = load_grammar(version='%s.%s' % sys.version_info[:2])
         if sys_path is None:
-            venv = os.getenv('VIRTUAL_ENV')
+            if venv_path:
+                venv = venv_path
+            else:
+                venv = os.getenv('VIRTUAL_ENV')
             if venv:
                 sys_path = list(get_venv_path(venv))
         self._evaluator = Evaluator(self._grammar, sys_path=sys_path)
@@ -137,7 +143,8 @@ class Script(object):
             code=self._source,
             path=self.path,
             grammar=self._grammar,
-            cache=False,  # No disk cache, because the current script often changes.
+            # No disk cache, because the current script often changes.
+            cache=False,
             diff_cache=True,
         )
 
@@ -158,7 +165,8 @@ class Script(object):
            Use :attr:`.path` instead.
         .. todo:: Remove!
         """
-        warnings.warn("Deprecated since version 0.7. Use path instead of source_path.", DeprecationWarning, stacklevel=2)
+        warnings.warn("Deprecated since version 0.7. Use path instead of source_path.",
+                      DeprecationWarning, stacklevel=2)
         return self.path
 
     def __repr__(self):
@@ -201,7 +209,8 @@ class Script(object):
                 return []
 
         context = self._evaluator.create_context(self._get_module(), leaf)
-        definitions = helpers.evaluate_goto_definition(self._evaluator, context, leaf)
+        definitions = helpers.evaluate_goto_definition(
+            self._evaluator, context, leaf)
 
         names = [s.name for s in definitions]
         defs = [classes.Definition(self._evaluator, name) for name in names]
@@ -269,7 +278,8 @@ class Script(object):
                 if name is None:
                     # Must be syntax
                     return []
-                definition_names = [TreeNameDefinition(self._get_module(), name)]
+                definition_names = [
+                    TreeNameDefinition(self._get_module(), name)]
 
             if not definition_names:
                 # Without a definition for a name we cannot find references.
@@ -280,7 +290,8 @@ class Script(object):
 
             modules = set([d.get_root_context() for d in definition_names])
             modules.add(self._get_module())
-            definitions = usages.usages(self._evaluator, definition_names, modules)
+            definitions = usages.usages(
+                self._evaluator, definition_names, modules)
         finally:
             settings.dynamic_flow_information = temp
 
@@ -303,7 +314,8 @@ class Script(object):
         :rtype: list of :class:`classes.CallSignature`
         """
         call_signature_details = \
-            helpers.get_call_signature_details(self._get_module_node(), self._pos)
+            helpers.get_call_signature_details(
+                self._get_module_node(), self._pos)
         if call_signature_details is None:
             return []
 
@@ -351,7 +363,8 @@ class Script(object):
                         # Iterate tuples.
                         unpack_tuple_to_dict(context, types, testlist)
                 else:
-                    try_iter_content(self._evaluator.goto_definitions(context, node))
+                    try_iter_content(
+                        self._evaluator.goto_definitions(context, node))
                 self._evaluator.reset_recursion_limitations()
 
             ana = [a for a in self._evaluator.analysis if self.path == a.path]
