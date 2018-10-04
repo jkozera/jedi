@@ -105,7 +105,7 @@ class NameFinder(object):
         names = []
         if self._context.predefined_names:
             node = self._name
-            while hasattr(node, 'is_scope') and node.is_scope():
+            while hasattr(node, 'is_scope') and not node.is_scope():
                 node = node.parent
                 if node.type in ("if_stmt", "for_stmt", "comp_for"):
                     try:
